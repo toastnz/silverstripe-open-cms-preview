@@ -1,4 +1,4 @@
-# Open CMS Preivew Module
+# Open CMS Preview Module
 This module allows you to open the CMS preview panel from any page in the CMS that has a form.
 
 ### Installation
