@@ -1,0 +1,30 @@
+{
+    "name": "toastnz/open-cms-preview",
+    "description": "Force SilverStripe to open the CMS preview panel on any page with a form",
+    "type": "silverstripe-vendormodule",
+    "keywords": [
+        "silverstripe",
+        "previews",
+        "modular"
+    ],
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Emmanuel Davies",
+            "homepage": "http://toast.co.nz/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "silverstripe/cms": "^5",
+        "silverstripe/framework": "^5",
+        "composer/installers": "*"
+    },
+    "extra": {
+        "resources-dir": "_resources",
+        "expose": [
+            "client"
+        ]
+    }
+}

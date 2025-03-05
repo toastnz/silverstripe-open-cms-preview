@@ -1,0 +1,117 @@
+body {
+  &:has([name="OpenCMSPreview"]) {
+    @media (min-width: 1440px) {
+      .cms-menu {
+        flex-shrink: 0;
+      }
+
+      .cms-content {
+        width: auto !important;
+        flex-basis: auto !important;
+        max-width: none !important;
+        min-width: 0 !important;
+      }
+
+      .cms-preview {
+        $min-width: 400px;
+        $max-width: 850px;
+        $default-width: calc(50vw - 300px);
+        $preview-width: clamp($min-width, var(--preview-width, $default-width), calc(100vw - #{$max-width})) !important;
+
+        position: relative;
+        width: $preview-width;
+        min-width: $preview-width;
+        max-width: $preview-width;
+        flex-basis: $preview-width;
+
+        &:has(iframe:not([src="about:blank"])) {
+          display: block !important;
+
+          .panel {
+            height: 100%
+          }
+
+          .preview-note {
+            display: none;
+          }
+
+          .preview-device-inner {
+            background-color: var(--cms-background-colour);
+          }
+
+          .cms-preview-controls {
+            display: none;
+          }
+        }
+
+        &.dragging {
+          cursor: ew-resize;
+
+          &:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 20px;
+            width: 100vw;
+            height: 100%;
+            z-index: 100;
+          }
+        }
+
+        &:has(.cms-preview__thumb) {
+          iframe {
+            margin-left: 20px;
+            box-shadow: 0 0 0 1px var(--cms-border-colour, transparent);
+          }
+        }
+      }
+
+      .cms-preview__thumb {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 20px;
+        height: auto;
+        padding: 0;
+        margin: 0;
+        transform: translateY(-50%);
+        border: 0;
+        background-color: transparent;
+        cursor: ew-resize;
+
+        &:before,
+        &:after {
+          content: 'S';
+          display: block;
+          text-align: center;
+          width: 100%;
+          font-size: 18px;
+          font-family: "silverstripe" !important;
+          font-style: normal !important;
+          font-weight: normal !important;
+          font-variant: normal !important;
+          text-transform: none !important;
+          line-height: 1;
+          margin-bottom: .1em;
+          color: var(--cms-text-colour, #ccc);
+        }
+      }
+
+      .cms-edit-form {
+        .field {
+          >label {
+            float: none;
+            max-width: 100%;
+            min-width: 100%;
+          }
+        }
+
+        .form__field-holder {
+          float: none;
+          max-width: 100%;
+          min-width: 100%;
+        }
+      }
+    }
+  }
+}
