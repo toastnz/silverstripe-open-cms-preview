@@ -19,7 +19,7 @@ public function getCMSFields()
     $fields = parent::getCMSFields();
 
     $fields->addFieldsToTab('Root.Main', [
-        OpenCmsPreview::create($this->owner->getPreviewLink());
+        OpenCmsPreview::create($this->getPreviewLink());
     ]);
 
     return $fields;
