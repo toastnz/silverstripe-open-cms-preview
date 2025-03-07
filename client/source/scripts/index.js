@@ -16,10 +16,10 @@ const selectors = {
   iframe: '.cms-preview iframe',
 }
 
-const iframeSrcObserver = new MutationObserver(() => {
-  if (!iframe || !input) return;
-  updatePreview();
-});
+// const iframeSrcObserver = new MutationObserver(() => {
+//   if (!iframe || !input) return;
+//   updatePreview();
+// });
 
 
 // Function to update the preview src
@@ -93,7 +93,7 @@ Observer.observe(selectors.input, (inputs) => {
 // Watch for the preview panel being added to the DOM
 Observer.observe(selectors.previewPanel, (panels) => {
   // If we have an iframe, unoobserve it to start with
-  if (iframe) try { iframeSrcObserver.unobserve(iframe) } catch (e) { }
+  // if (iframe) try { iframeSrcObserver.unobserve(iframe) } catch (e) { }
 
   // Update the preview panel and iframe vars
   previewPanel = panels[0];
@@ -102,9 +102,9 @@ Observer.observe(selectors.previewPanel, (panels) => {
   // Initialize the preview
   init();
 
-  // Observe the iframe src
-  iframeSrcObserver.observe(iframe, {
-    attributes: true,
-    attributeFilter: ['src'],
-  });
+  // // Observe the iframe src
+  // iframeSrcObserver.observe(iframe, {
+  //   attributes: true,
+  //   attributeFilter: ['src'],
+  // });
 });
