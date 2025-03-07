@@ -12,37 +12,21 @@ body {
         min-width: 0 !important;
       }
 
-      .cms-preview {
+      .open-cms-preview {
         $min-width: 400px;
         $max-width: 850px;
         $default-width: calc(50vw - 300px);
         $preview-width: clamp($min-width, var(--preview-width, $default-width), calc(100vw - #{$max-width})) !important;
 
+        display: flex;
+        height: 100%;
         position: relative;
         width: $preview-width;
         min-width: $preview-width;
         max-width: $preview-width;
         flex-basis: $preview-width;
-
-        &:has(iframe:not([src="about:blank"])) {
-          display: block !important;
-
-          .panel {
-            height: 100%
-          }
-
-          .preview-note {
-            display: none;
-          }
-
-          .preview-device-inner {
-            background-color: var(--cms-background-colour);
-          }
-
-          .cms-preview-controls {
-            display: none;
-          }
-        }
+        border-left: 1px solid var(--cms-border-colour, #ccc);
+        background-color: var(--cms-background-colour, #fff);
 
         &.dragging {
           cursor: ew-resize;
@@ -58,7 +42,16 @@ body {
           }
         }
 
-        &:has(.cms-preview__thumb) {
+        &__iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+
+        &:has(.open-cms-preview__thumb) {
           iframe {
             margin-left: 20px;
             box-shadow: 0 0 0 1px var(--cms-border-colour, transparent);
@@ -66,7 +59,7 @@ body {
         }
       }
 
-      .cms-preview__thumb {
+      .open-cms-preview__thumb {
         position: absolute;
         top: 50%;
         left: 0;

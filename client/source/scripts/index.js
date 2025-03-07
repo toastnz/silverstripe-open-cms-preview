@@ -1,33 +1,31 @@
-import DomObserverController from 'domobserverjs';
-
 import '../styles/index.scss';
 
-// Create a new observer
-const Observer = new DomObserverController;
+const previewPanel = document.createElement('div');
+const iframe = document.createElement('iframe');
 
 let input = null;
-let previewPanel = null;
-let iframe = null;
+let container = null;
+let refreshTimeout = null;
 
 // Selectors for the input and preview panel elements
 const selectors = {
+  container: '.cms-container',
   input: '[name="OpenCMSPreview"]',
-  previewPanel: '.cms-preview',
-  iframe: '.cms-preview iframe',
 }
 
-// const iframeSrcObserver = new MutationObserver(() => {
-//   if (!iframe || !input) return;
-//   updatePreview();
-// });
-
+// Set up some classes and put the iframe into the preview panel
+iframe.src = 'about:blank';
+iframe.className = 'open-cms-preview__iframe';
+previewPanel.classList.add('open-cms-preview');
+previewPanel.appendChild(iframe);
 
 // Function to update the preview src
 function updatePreview() {
-  if (iframe.src === input.value || iframe.src.indexOf(input.value) > -1) return;
+  clearTimeout(refreshTimeout);
 
-  // Set the iframe src to the input value
-  iframe.src = input.value;
+  refreshTimeout = setTimeout(() => {
+    iframe.src = input.value;
+  }, 500);
 }
 
 function makePreviewResizeable() {
@@ -38,7 +36,7 @@ function makePreviewResizeable() {
   const thumb = document.createElement('button');
 
   // Add a class
-  thumb.classList.add('cms-preview__thumb');
+  thumb.classList.add('open-cms-preview__thumb');
 
   // Add the thumb to the preview
   previewPanel.appendChild(thumb);
@@ -70,41 +68,39 @@ function makePreviewResizeable() {
   });
 }
 
-function init() {
-  // If we dont have an input or iframe, we cant open the preview
-  if (!input || !document.body.contains(input)) return;
-  if (!iframe || !document.body.contains(iframe)) return;
-  if (!previewPanel || !document.body.contains(previewPanel)) return;
+function addPreview() {
+  if (!document.body.contains(previewPanel)) {
+    container.appendChild(previewPanel);
+  }
 
   // Update the preview
-  makePreviewResizeable();
   updatePreview();
 }
 
-// Watch for our input being added to the DOM
-Observer.observe(selectors.input, (inputs) => {
-  // Update the input var
-  input = inputs[0];
+function removePreview() {
+  if (document.body.contains(previewPanel)) {
+    previewPanel.remove();
+  }
+}
 
-  // Initialize the preview
-  init();
+const Observer = new MutationObserver((mutations) => {
+  // Check if the input exists
+  input = document.querySelector(selectors.input);
+  // Check if the container exists
+  container = document.querySelector(selectors.container);
+
+  // If any of the mutations are inside the container
+  if (mutations.some((mutation) => mutation.target.closest(selectors.container))) {
+    // Show or hide the preview based on the presence of the input
+    (input && container) ? addPreview() : removePreview();
+  }
+
 });
 
-// Watch for the preview panel being added to the DOM
-Observer.observe(selectors.previewPanel, (panels) => {
-  // If we have an iframe, unoobserve it to start with
-  // if (iframe) try { iframeSrcObserver.unobserve(iframe) } catch (e) { }
-
-  // Update the preview panel and iframe vars
-  previewPanel = panels[0];
-  iframe = document.querySelector(selectors.iframe);
-
-  // Initialize the preview
-  init();
-
-  // // Observe the iframe src
-  // iframeSrcObserver.observe(iframe, {
-  //   attributes: true,
-  //   attributeFilter: ['src'],
-  // });
+// Watch the body for changes
+Observer.observe(document.body, {
+  childList: true,
+  subtree: true,
 });
+
+makePreviewResizeable();
