@@ -101,8 +101,11 @@ const Observer = new MutationObserver((mutations) => {
   // Check if the container exists
   container = document.querySelector(selectors.container);
 
-  // If any of the mutations are inside the container
-  if (mutations.some((mutation) => mutation.target.closest(selectors.container))) {
+  // If any of the mutations involve added or removed element nodes
+  if (mutations.some((mutation) =>
+    Array.from(mutation.addedNodes).some(node => node.nodeType === 1) ||
+    Array.from(mutation.removedNodes).some(node => node.nodeType === 1)
+  )) {
     // Show or hide the preview based on the presence of the input
     (input && container) ? addPreview() : removePreview();
   }
