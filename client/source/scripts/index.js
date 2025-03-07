@@ -6,6 +6,7 @@ const iframe = document.createElement('iframe');
 let input = null;
 let container = null;
 let refreshTimeout = null;
+let isRefreshing = false;
 
 // Selectors for the input and preview panel elements
 const selectors = {
@@ -21,10 +22,21 @@ previewPanel.appendChild(iframe);
 
 // Function to update the preview src
 function updatePreview() {
+  if (isRefreshing) return;
+
   clearTimeout(refreshTimeout);
 
+  isRefreshing = true;
+
   refreshTimeout = setTimeout(() => {
-    iframe.src = input.value;
+    iframe.src = 'about:blank';
+
+    clearTimeout(refreshTimeout);
+
+    refreshTimeout = setTimeout(() => {
+      iframe.src = input.value;
+      isRefreshing = false;
+    }, 500);
   }, 500);
 }
 
@@ -94,7 +106,6 @@ const Observer = new MutationObserver((mutations) => {
     // Show or hide the preview based on the presence of the input
     (input && container) ? addPreview() : removePreview();
   }
-
 });
 
 // Watch the body for changes
