@@ -49,17 +49,11 @@ body {
         &__iframe {
           position: absolute;
           top: 0;
-          left: 0;
-          width: 100%;
+          left: 20px;
+          width: calc(100% - 20px);
           height: 100%;
           border: 0;
-        }
-
-        &:has(.open-cms-preview__thumb) {
-          iframe {
-            margin-left: 20px;
-            box-shadow: 0 0 0 1px var(--cms-border-colour, transparent);
-          }
+          box-shadow: 0 0 0 1px var(--cms-border-colour, transparent);
         }
       }
 
