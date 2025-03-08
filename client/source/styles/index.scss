@@ -98,9 +98,11 @@ body {
         }
 
         .form__field-holder {
-          float: none;
-          max-width: 100%;
-          min-width: 100%;
+          &:not(.form__fieldgroup) {
+            float: none;
+            max-width: 100%;
+            min-width: 100%;
+          }
         }
       }
     }
