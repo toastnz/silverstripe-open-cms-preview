@@ -35,8 +35,11 @@ function updatePreview() {
     clearTimeout(refreshTimeout);
 
     refreshTimeout = setTimeout(() => {
-      iframe.src = input.value;
       isRefreshing = false;
+
+      if (!input) return;
+
+      iframe.src = input.value;
     }, 500);
   }, 500);
 }
