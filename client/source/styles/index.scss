@@ -1,3 +1,7 @@
+.open-cms-preview {
+  display: none;
+}
+
 body {
   &:has([name="OpenCMSPreview"]) {
     @media (min-width: 1440px) {

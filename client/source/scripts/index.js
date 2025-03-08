@@ -1,5 +1,6 @@
 import '../styles/index.scss';
 
+const defaultSrc = 'about:blank?CMSPreview=true';
 const previewPanel = document.createElement('div');
 const iframe = document.createElement('iframe');
 
@@ -15,7 +16,7 @@ const selectors = {
 }
 
 // Set up some classes and put the iframe into the preview panel
-iframe.src = 'about:blank';
+iframe.src = defaultSrc;
 iframe.className = 'open-cms-preview__iframe';
 previewPanel.classList.add('open-cms-preview');
 previewPanel.appendChild(iframe);
@@ -29,7 +30,7 @@ function updatePreview() {
   isRefreshing = true;
 
   refreshTimeout = setTimeout(() => {
-    iframe.src = 'about:blank';
+    iframe.src = defaultSrc;
 
     clearTimeout(refreshTimeout);
 
