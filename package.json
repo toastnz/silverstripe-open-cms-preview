@@ -1,7 +1,7 @@
 {
-    "name": "theme-colours",
+    "name": "open-cms-preview",
     "version": "0.0.0",
-    "description": "Styles and scripts related to the theme-colours module",
+    "description": "Styles and scripts related to the open-cms-preview module",
     "scripts": {
         "watch": "webpack --mode development --progress --watch --config webpack.config.js",
         "build": "webpack --mode production --progress --config webpack.config.js"
