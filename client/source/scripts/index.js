@@ -1,16 +1,16 @@
 import '../styles/index.scss';
 
-const defaultSrc = 'about:blank';
+const defaultSrc = 'about:blank?CMSPreview=1';
 const previewPanel = document.createElement('div');
 
 let input = null;
 let container = null;
 let refreshTimeout = null;
 let isRefreshing = false;
-let mutationCount = [];
-let mutationTimeout = null;
-let currentURL = '';
 let iframe = document.createElement('iframe');
+
+// Store some vars in a cache
+const cache = {};
 
 // Selectors for the input and preview panel elements
 const selectors = {
@@ -28,52 +28,122 @@ previewPanel.appendChild(iframe);
 function updatePreview() {
   if (isRefreshing) return;
 
+  // Clear the refresh timeout
   clearTimeout(refreshTimeout);
 
+  // We are refreshing so set isRefreshing to true
   isRefreshing = true;
 
+  // Set a timeout to update the iframe src
   refreshTimeout = setTimeout(() => {
     clearTimeout(refreshTimeout);
+    // Reset the iframe src
+    iframe.src = defaultSrc;
+    // Add a loading class to the iframe
+    iframe.classList.add('loading');
 
+    // Set a timeout to update the iframe src
     refreshTimeout = setTimeout(() => {
       if (!input) return isRefreshing = false;
 
-      // Create a new iframe element
-      const newIframe = document.createElement('iframe');
-
       const onLoad = () => {
-        // Get the scroll position of the old iframe
-        const scrollY = iframe.contentWindow.scrollY;
-
-        // Set the scroll position of the new iframe
-        newIframe.contentWindow.scrollTo(0, scrollY);
-
-        // Remove the old iframe
-        iframe.remove();
-
-        // Set the new iframe as the current iframe
-        iframe = newIframe;
-        // Set isRefreshing to false
+        // We are no longer refreshing
         isRefreshing = false;
 
         // Remove the load event listener
-        newIframe.removeEventListener('load', onLoad);
+        iframe.removeEventListener('load', onLoad);
+
+        // Remove the loading class to the iframe
+        iframe.classList.remove('loading');
       }
 
-      // Set the new iframe class to the current iframe class
-      newIframe.className = iframe.className;
-      previewPanel.appendChild(newIframe);
+      // Add a load event listener to the iframe
+      iframe.addEventListener('load', onLoad);
 
-      // When the newIframe is loaded, remove the old iframe and show the new one
-      newIframe.addEventListener('load', onLoad);
-
-      // Set the new iframe src to the input value
-      newIframe.src = input.value;
-    }, 500);
-  }, 500);
+      // Set the iframe src to the input value
+      iframe.src = input.value;
+    }, 100);
+  }, 100);
 }
 
-function makePreviewResizeable() {
+function addPreview() {
+  if (!document.body.contains(previewPanel)) {
+    container.appendChild(previewPanel);
+
+    // Update the preview
+    updatePreview();
+  }
+}
+
+function removePreview() {
+  // Remove the preview panel if it exists
+  if (document.body.contains(previewPanel)) {
+    previewPanel.remove();
+  }
+}
+
+const Observer = new MutationObserver(() => {
+  // Query for the input and container elements
+  input = document.querySelector(selectors.input);
+  container = document.querySelector(selectors.container);
+
+  // If the input and container are found, add the preview
+  if (input && container) {
+    // If the input and container are the same as the cache, return
+    if (cache.input && input === cache.input && cache.container && container === cache.container) return;
+
+    // Update the cache
+    cache.input = input;
+    cache.container = container;
+
+    // Add the preview and return
+    return addPreview();
+  }
+
+  // If the input or container are not found, remove the preview
+  removePreview();
+});
+
+// Watch the body for changes
+Observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+});
+
+function handlePostRequestURL(path = '') {
+  // Ensure the path starts with a '/'
+  if (!path.startsWith('/')) path = '/' + path;
+
+  // Set up a post request URL variable
+  let postURL = null;
+  // Grab the current location
+  let location = window.location.href;
+  let locationURL = new URL(location);
+  let postURLParams = null;
+
+  // Remove everything after the host from the location URL and set it as the location
+  location = locationURL.protocol + '//' + locationURL.host;
+
+  // Convert the path to a URL object
+  postURL = new URL(location + path);
+
+  postURLParams = postURL.searchParams;
+
+  // Ensure the URL is pointing to /admin
+  if (!postURL.pathname.startsWith('/admin')) return; // console.log('Not an admin URL:', postURL);
+
+  // If the last segment of the path is '/search', return
+  if (postURL.pathname.endsWith('/search')) return; // console.log('Search request URL:', postURL);
+
+  // If any of the URL parameters are 'search', return
+  if (postURLParams.has('search')) return; // console.log('Search request URL:', postURL);
+
+
+  // If we make it this far, update the preview
+  updatePreview();
+}
+
+(function makePreviewResizeable() {
   // We will toggle this to toggle the dragging state
   let isDragging = false;
 
@@ -111,83 +181,40 @@ function makePreviewResizeable() {
       document.body.style.setProperty('--preview-width', `${width}px`);
     });
   });
-}
+})();
 
-function addPreview() {
-  if (!document.body.contains(previewPanel)) {
-    container.appendChild(previewPanel);
-  }
+(function () {
+  // Override XMLHttpRequest
+  var originalOpen = XMLHttpRequest.prototype.open;
+  var originalSend = XMLHttpRequest.prototype.send;
 
-  // Update the preview
-  updatePreview();
-}
-
-function removePreview() {
-  // Clear the current URL
-  currentURL = '';
-
-  // Remove the preview panel if it exists
-  if (document.body.contains(previewPanel)) {
-    previewPanel.remove();
-  }
-}
-
-const VisibleMutationObserver = new IntersectionObserver((entries) => {
-  // Loop through each entry and check if it is visible
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      mutationCount.push(entry);
-    }
-
-    VisibleMutationObserver.unobserve(entry.target);
-  });
-});
-
-
-const Observer = new MutationObserver((mutations) => {
-  // Clear the previous timeout
-  clearTimeout(mutationTimeout);
-
-  // Set a timeout to reset the mutation count after 1 second
-  mutationTimeout = setTimeout(() => {
-    // Clear the previous visible mutations
-    mutationCount.length = 0;
-  }, 50);
-
-  // Check if the input exists
-  input = document.querySelector(selectors.input);
-  // Check if the container exists
-  container = document.querySelector(selectors.container);
-
-  // Loop through each mutation and check for elements that were added (excluding the preview panel)
-  mutations.forEach(mutation => {
-    mutation.addedNodes.forEach((node) => {
-      if (node.nodeType !== 1) return;
-      if (previewPanel.contains(node)) return;
-
-      VisibleMutationObserver.observe(node);
+  XMLHttpRequest.prototype.open = function (method, url) {
+    this.addEventListener('load', function () {
+      handlePostRequestURL(url);
     });
-  });
 
-  // Check if there are 3 or more mutations within 50ms
-  if (mutationCount.length >= 3 || window.location.href !== currentURL) {
+    originalOpen.apply(this, arguments);
+  };
 
-    // Update the current URL
-    currentURL = window.location.href;
+  XMLHttpRequest.prototype.send = function () {
+    originalSend.apply(this, arguments);
+  };
 
-    // Clear the previous visible mutations
-    mutationCount.length = 0;
+  // Override fetch
+  const originalFetch = window.fetch;
 
-    console.log('updating preview');
-    // Show or hide the preview based on the presence of the input
-    (input && container) ? addPreview() : removePreview();
+  window.fetch = async function (...args) {
+    try {
+      const response = await originalFetch.apply(this, args);
+      handlePostRequestURL(response.url);
+      return response;
+    } catch (error) { /* Do nothing */ }
+  };
+
+  // jQuery AJAX events
+  if (window.jQuery) {
+    jQuery(document).ajaxSuccess(function (event, jqxhr, settings) {
+      handlePostRequestURL(settings.url);
+    });
   }
-});
-
-// Watch the body for changes
-Observer.observe(document.body, {
-  childList: true,
-  subtree: true,
-});
-
-makePreviewResizeable();
+})();

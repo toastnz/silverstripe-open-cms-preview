@@ -53,12 +53,15 @@ body {
           width: calc(100% - 20px);
           height: 100%;
           border: 0;
+          opacity: 1;
           box-shadow: 0 0 0 1px var(--cms-border-colour, transparent);
-        }
 
-        iframe {
-          &:not(:nth-of-type(1)) {
+          &.loading {
             opacity: 0;
+          }
+
+          &:not(.loading) {
+            transition: opacity .5s ease;
           }
         }
       }
