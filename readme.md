@@ -30,3 +30,33 @@ public function getPreviewLink()
     // Return the link to the page you want to preview
 }
 ```
+
+### Extending the controller
+The module adds a new OpenCMSPreviewController to the window which you can extend to add custom functionality.
+
+The refresh event is called when the Controller observes an ajax / fetch event with some basic and conditional checks to determine when the refresh should be called or prevented. You can use the on('beforeRefresh') event to add custom functionality before the refresh is called.
+
+Additionally you can call event.preventRefresh(); to prevent the refresh from being called.
+
+``` js
+// Example usage
+window.OpenCMSPreviewController.on('beforeRefresh', (event) => {
+    event.preventRefresh();
+});
+```
+
+You also have access to a few other events:
+
+``` js
+
+// When the refresh is complete
+on('refresh', (iframeSrc) => {});
+
+// Before the preview refresh script has run
+on('beforeRefresh', (event) => {});
+
+// After the preview has been added to the page
+on('addPreview', (previewElement) => {});
+
+// After the preview has been removed from the page
+on('removePreview', () => {});
