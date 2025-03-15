@@ -63,8 +63,8 @@ class CMSPreviewController {
       }, delay);
     }, delay);
 
-    // Make sure the event is an object, if it is not, wrap it in an object
-    if (typeof event !== 'object') event = { data: event };
+    // Wrap the event in a new object
+    event = { data: event };
 
     // Add a prevent refresh function to the event object
     event.preventRefresh = () => {

@@ -41,7 +41,13 @@ Additionally you can call event.preventRefresh(); to prevent the refresh from be
 ``` js
 // Example usage
 window.OpenCMSPreviewController.on('beforeRefresh', (event) => {
-    event.preventRefresh();
+    // This event data also includes the ajax / fetch response
+    console.log(event.data);
+
+    // Prevent the refresh from being called if some condition is met
+    if (event.data.someKey == 'someValue') {
+        event.preventRefresh();
+    }
 });
 ```
 
