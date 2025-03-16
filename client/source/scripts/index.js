@@ -37,8 +37,20 @@ class CMSPreviewController {
   refresh(event = {}) {
     if (this.isRefreshing) return;
 
+    let prevent = false;
+
     // Halve the delay time because we wait twice
     const delay = this.refreshDelay * 0.5;
+
+    // Wrap the event in a new object
+    event = { data: event };
+
+    // Add a prevent refresh function to the event object
+    event.preventRefresh = () => prevent = true;
+
+    this.callback('beforeRefresh', event);
+
+    if (prevent) return;
 
     clearTimeout(this.refreshTimeout);
     this.isRefreshing = true;
@@ -62,17 +74,6 @@ class CMSPreviewController {
         this.iframe.src = this.input.value;
       }, delay);
     }, delay);
-
-    // Wrap the event in a new object
-    event = { data: event };
-
-    // Add a prevent refresh function to the event object
-    event.preventRefresh = () => {
-      this.isRefreshing = false;
-      clearTimeout(this.refreshTimeout);
-    }
-
-    this.callback('beforeRefresh', event);
   }
 
   addPreview() {
@@ -159,17 +160,49 @@ class CMSPreviewController {
 // Create a new instance of the CMSPreviewController and assign it to the window
 window.OpenCMSPreviewController = new CMSPreviewController();
 
+// Some default conditions to prevent refresh
+const shouldPreventRefresh = (URL, response) => {
+  if (!URL) return false;
+
+  // URL based conditions
+  if (!URL.pathname.startsWith('/admin')) return true;
+  if (URL.pathname.endsWith('/search')) return true;
+  if (URL.pathname.endsWith('/ping')) return true;
+  if (URL.pathname.endsWith('/SearchForm')) return true;
+  if (URL.searchParams.has('search')) return true;
+
+  // If this is a reorder request, allow the refresh regardless of the response
+  if (URL.pathname.endsWith('/reorder')) return false;
+
+  if (!response) return false;
+
+  // Response based conditions
+  try {
+    // Try parse the response as JSON, if it fails, prevent refresh
+    const contentType = response.getResponseHeader("Content-Type");
+
+    if (contentType && contentType !== 'application/json') return true;
+  } catch (error) { /* Do nothing */ }
+
+  return false;
+}
+
+// Before the refresh event, check if we should prevent the refresh
+window.OpenCMSPreviewController.on('beforeRefresh', (event) => {
+  const { URL, response } = event.data;
+
+  if (shouldPreventRefresh(URL, response)) return event.preventRefresh();
+});
+
+
+// After any fetch event, call the refresh method
 function onAfterFetch(path = '', response) {
   if (!path.startsWith('/')) path = '/' + path;
 
   const locationURL = new URL(window.location.href);
   const postURL = new URL(locationURL.origin + path);
 
-  if (!postURL.pathname.startsWith('/admin') || postURL.pathname.endsWith('/search') || postURL.searchParams.has('search')) {
-    return;
-  }
-
-  window.OpenCMSPreviewController.refresh({ path, response });
+  window.OpenCMSPreviewController.refresh({ URL: postURL, response });
 }
 
 (() => {
@@ -177,36 +210,12 @@ function onAfterFetch(path = '', response) {
   const originalSend = XMLHttpRequest.prototype.send;
 
   XMLHttpRequest.prototype.open = function (method, url) {
-    this.addEventListener('load', () => onAfterFetch(url));
+    this._url = url;
     originalOpen.apply(this, arguments);
   };
 
   XMLHttpRequest.prototype.send = function () {
+    this.addEventListener('load', () => onAfterFetch(this._url, this));
     originalSend.apply(this, arguments);
   };
-
-  const originalFetch = window.fetch;
-
-  window.fetch = async function (...args) {
-    try {
-      const response = await originalFetch.apply(this, args);
-      onAfterFetch(args[0], response); // Call onAfterFetch with path and response
-      return response;
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // jQuery AJAX events
-  if (window.jQuery) {
-    window.$ = jQuery;
-
-    $(document).ajaxSuccess(function (event, jqxhr, settings) {
-      onAfterFetch(settings.url, jqxhr); // Call onAfterFetch with path and response
-    });
-
-    $(document).ajaxError(function (event, jqxhr, settings, thrownError) {
-      console.error("jQuery AJAX request failed", settings, thrownError);
-    });
-  }
 })();
