@@ -176,13 +176,14 @@ const shouldPreventRefresh = (URL, response) => {
 
   if (!response) return false;
 
-  // Response based conditions
-  try {
-    // Try parse the response as JSON, if it fails, prevent refresh
-    const contentType = response.getResponseHeader("Content-Type");
+  // Commented this as it was preventing the preview from refreshing when saving the site config, and I cannot remember why it was here...
+  // // Response based conditions
+  // try {
+  //   // Try parse the response as JSON, if it fails, prevent refresh
+  //   const contentType = response.getResponseHeader("Content-Type");
 
-    if (contentType && contentType !== 'application/json') return true;
-  } catch (error) { /* Do nothing */ }
+  //   if (contentType && contentType !== 'application/json') return true;
+  // } catch (error) { /* Do nothing */ }
 
   return false;
 }
