@@ -17,7 +17,7 @@
     ],
     "require": {
         "php": ">=8.3",
-        "silverstripe/cms": "^6",
+        "silverstripe/cms": "^5.0 || ^6.0",
         "composer/installers": "*"
     },
     "extra": {
