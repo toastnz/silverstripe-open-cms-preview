@@ -117,13 +117,13 @@ class CMSPreviewController {
   makePreviewResizeable() {
     let isDragging = false;
     let width = 0;
-    const prevWidth = window.sessionStorage.getItem('cmsPreviewWidth');
+    const prevWidth = parseInt(window.sessionStorage.getItem('cmsPreviewWidth') || 0, 10);
     const thumb = document.createElement('button');
     thumb.classList.add('open-cms-preview__thumb');
     this.previewPanel.appendChild(thumb);
 
     if (prevWidth) {
-      document.body.style.setProperty('--preview-width', prevWidth);
+      document.body.style.setProperty('--preview-width', `${prevWidth}px`);
     }
 
     thumb.addEventListener('mousedown', () => {
@@ -134,7 +134,7 @@ class CMSPreviewController {
     window.addEventListener('mouseup', () => {
       isDragging = false;
       this.previewPanel.classList.remove('dragging');
-      window.sessionStorage.setItem('cmsPreviewWidth', width);
+      window.sessionStorage.setItem('cmsPreviewWidth', `${width}px`);
     });
 
     window.addEventListener('mousemove', (e) => {
@@ -142,9 +142,9 @@ class CMSPreviewController {
         if (!isDragging) return;
 
         const mouseX = (e.clientX - 10);
-        width = `${window.innerWidth - mouseX}px`;
+        width = window.innerWidth - mouseX;
 
-        document.body.style.setProperty('--preview-width', width);
+        document.body.style.setProperty('--preview-width', `${width}px`);
       });
     });
   }
