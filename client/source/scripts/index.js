@@ -116,9 +116,15 @@ class CMSPreviewController {
 
   makePreviewResizeable() {
     let isDragging = false;
+    let width = 0;
+    const prevWidth = window.sessionStorage.getItem('cmsPreviewWidth');
     const thumb = document.createElement('button');
     thumb.classList.add('open-cms-preview__thumb');
     this.previewPanel.appendChild(thumb);
+
+    if (prevWidth) {
+      document.body.style.setProperty('--preview-width', prevWidth);
+    }
 
     thumb.addEventListener('mousedown', () => {
       isDragging = true;
@@ -128,6 +134,7 @@ class CMSPreviewController {
     window.addEventListener('mouseup', () => {
       isDragging = false;
       this.previewPanel.classList.remove('dragging');
+      window.sessionStorage.setItem('cmsPreviewWidth', width);
     });
 
     window.addEventListener('mousemove', (e) => {
@@ -135,9 +142,9 @@ class CMSPreviewController {
         if (!isDragging) return;
 
         const mouseX = (e.clientX - 10);
-        const width = window.innerWidth - mouseX;
+        width = `${window.innerWidth - mouseX}px`;
 
-        document.body.style.setProperty('--preview-width', `${width}px`);
+        document.body.style.setProperty('--preview-width', width);
       });
     });
   }

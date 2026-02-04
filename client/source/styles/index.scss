@@ -17,9 +17,9 @@ body {
       }
 
       .open-cms-preview {
-        $min-width: 400px;
-        $max-width: 850px;
-        $default-width: calc(50vw - 300px);
+        $min-width: var(--open-cms-preview-min-width, 400px);
+        $max-width: var(--open-cms-preview-max-width, 850px);
+        $default-width: var(--open-cms-preview-default-width, calc(50vw - 300px));
         $preview-width: clamp($min-width, var(--preview-width, $default-width), calc(100vw - #{$max-width})) !important;
 
         display: flex;
